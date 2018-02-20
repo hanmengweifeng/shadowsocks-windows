@@ -188,7 +188,7 @@
       <DependentUpon>CalculationControl.cs</DependentUpon>
     </Compile>
     <Compile Include="View\HotkeySettingsForm.cs">
-      <SubType>Form</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="View\HotkeySettingsForm.designer.cs">
       <DependentUpon>HotkeySettingsForm.cs</DependentUpon>

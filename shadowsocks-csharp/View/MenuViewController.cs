@@ -490,17 +490,17 @@ namespace Shadowsocks.View
 
         private void ShowHotKeySettingsForm()
         {
-            if (hotkeySettingsForm != null)
-            {
-                hotkeySettingsForm.Activate();
-            }
-            else
-            {
-                hotkeySettingsForm = new HotkeySettingsForm(controller);
-                hotkeySettingsForm.Show();
-                hotkeySettingsForm.Activate();
-                hotkeySettingsForm.FormClosed += hotkeySettingsForm_FormClosed;
-            }
+            //if (hotkeySettingsForm != null)
+            //{
+            //    hotkeySettingsForm.Activate();
+            //}
+            //else
+            //{
+            //    hotkeySettingsForm = new HotkeySettingsForm(controller);
+            //    hotkeySettingsForm.Show();
+            //    hotkeySettingsForm.Activate();
+            //    hotkeySettingsForm.FormClosed += hotkeySettingsForm_FormClosed;
+            //}
         }
 
         private void ShowSettingsTabForm()

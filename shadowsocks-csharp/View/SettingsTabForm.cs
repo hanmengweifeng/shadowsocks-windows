@@ -16,6 +16,8 @@ namespace Shadowsocks.View
     {
         private ShadowsocksController controller;
         private ProxyForm proxyForm;
+        private HotkeySettingsForm hotkeySettingsForm;
+
 
         public SettingsTabForm(ShadowsocksController controller)
         {
@@ -34,6 +36,10 @@ namespace Shadowsocks.View
             proxyForm = new ProxyForm(controller);
             proxyForm.Dock = DockStyle.Fill;
             tabPageProxy.Controls.Add(proxyForm);
+
+            hotkeySettingsForm = new HotkeySettingsForm(controller);
+            hotkeySettingsForm.Dock = DockStyle.Fill;
+            tabPageHotkey.Controls.Add(hotkeySettingsForm);
         }
 
     }

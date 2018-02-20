@@ -14,20 +14,21 @@ using Shadowsocks.Util;
 
 namespace Shadowsocks.View
 {
-    public partial class HotkeySettingsForm : Form
+    public partial class HotkeySettingsForm : UserControl
     {
         private readonly ShadowsocksController _controller;
 
         // this is a copy of configuration that we are working on
-        private HotkeyConfig _modifiedConfig;
+        private HotkeyConfig _modifiedHotkeyConfig;
 
         private readonly IEnumerable<TextBox> _allTextBoxes;
 
         public HotkeySettingsForm(ShadowsocksController controller)
         {
+            this.Font = System.Drawing.SystemFonts.MessageBoxFont;
             InitializeComponent();
             UpdateTexts();
-            Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
+            //Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             _controller = controller;
             _controller.ConfigChanged += controller_ConfigChanged;
@@ -46,8 +47,8 @@ namespace Shadowsocks.View
 
         private void LoadCurrentConfiguration()
         {
-            _modifiedConfig = _controller.GetConfigurationCopy().hotkey;
-            LoadConfiguration(_modifiedConfig);
+            _modifiedHotkeyConfig = _controller.GetConfigurationCopy().hotkey;
+            LoadConfiguration(_modifiedHotkeyConfig);
         }
 
         private void LoadConfiguration(HotkeyConfig config)
@@ -154,7 +155,7 @@ namespace Shadowsocks.View
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            Close();
+            //Close();
         }
 
         private void OKButton_Click(object sender, EventArgs e)
@@ -175,7 +176,7 @@ namespace Shadowsocks.View
 
             // All check passed, saving
             SaveConfig();
-            Close();
+            //Close();
         }
 
         private void RegisterAllButton_Click(object sender, EventArgs e)
@@ -235,13 +236,13 @@ namespace Shadowsocks.View
 
         private void SaveConfig()
         {
-            _modifiedConfig.SwitchSystemProxy = SwitchSystemProxyTextBox.Text;
-            _modifiedConfig.SwitchSystemProxyMode = SwitchProxyModeTextBox.Text;
-            _modifiedConfig.SwitchAllowLan = SwitchAllowLanTextBox.Text;
-            _modifiedConfig.ShowLogs = ShowLogsTextBox.Text;
-            _modifiedConfig.ServerMoveUp = ServerMoveUpTextBox.Text;
-            _modifiedConfig.ServerMoveDown = ServerMoveDownTextBox.Text;
-            _controller.SaveHotkeyConfig(_modifiedConfig);
+            _modifiedHotkeyConfig.SwitchSystemProxy = SwitchSystemProxyTextBox.Text;
+            _modifiedHotkeyConfig.SwitchSystemProxyMode = SwitchProxyModeTextBox.Text;
+            _modifiedHotkeyConfig.SwitchAllowLan = SwitchAllowLanTextBox.Text;
+            _modifiedHotkeyConfig.ShowLogs = ShowLogsTextBox.Text;
+            _modifiedHotkeyConfig.ServerMoveUp = ServerMoveUpTextBox.Text;
+            _modifiedHotkeyConfig.ServerMoveDown = ServerMoveDownTextBox.Text;
+            _controller.SaveHotkeyConfig(_modifiedHotkeyConfig);
         }
 
 

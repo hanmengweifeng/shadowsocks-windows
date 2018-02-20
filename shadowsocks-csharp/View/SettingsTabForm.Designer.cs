@@ -51,7 +51,7 @@
             this.tabControl1.Location = new System.Drawing.Point(8, 8);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(639, 377);
+            this.tabControl1.Size = new System.Drawing.Size(468, 377);
             this.tabControl1.TabIndex = 2;
             // 
             // tabPageServers
@@ -59,7 +59,7 @@
             this.tabPageServers.Location = new System.Drawing.Point(4, 22);
             this.tabPageServers.Name = "tabPageServers";
             this.tabPageServers.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageServers.Size = new System.Drawing.Size(631, 355);
+            this.tabPageServers.Size = new System.Drawing.Size(631, 351);
             this.tabPageServers.TabIndex = 0;
             this.tabPageServers.Text = "Servers";
             this.tabPageServers.UseVisualStyleBackColor = true;
@@ -69,7 +69,7 @@
             this.tabPageProxy.Location = new System.Drawing.Point(4, 22);
             this.tabPageProxy.Name = "tabPageProxy";
             this.tabPageProxy.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageProxy.Size = new System.Drawing.Size(631, 351);
+            this.tabPageProxy.Size = new System.Drawing.Size(460, 351);
             this.tabPageProxy.TabIndex = 1;
             this.tabPageProxy.Text = "Forward Proxy";
             this.tabPageProxy.UseVisualStyleBackColor = true;
@@ -78,14 +78,14 @@
             // 
             this.tabPageHotkey.Location = new System.Drawing.Point(4, 22);
             this.tabPageHotkey.Name = "tabPageHotkey";
-            this.tabPageHotkey.Size = new System.Drawing.Size(631, 355);
+            this.tabPageHotkey.Size = new System.Drawing.Size(631, 351);
             this.tabPageHotkey.TabIndex = 2;
             this.tabPageHotkey.Text = "Hotkey";
             this.tabPageHotkey.UseVisualStyleBackColor = true;
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(405, 3);
+            this.buttonOK.Location = new System.Drawing.Point(234, 3);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 3;
@@ -94,7 +94,7 @@
             // 
             // buttonCancel
             // 
-            this.buttonCancel.Location = new System.Drawing.Point(486, 3);
+            this.buttonCancel.Location = new System.Drawing.Point(315, 3);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 4;
@@ -103,7 +103,7 @@
             // 
             // buttonApply
             // 
-            this.buttonApply.Location = new System.Drawing.Point(567, 3);
+            this.buttonApply.Location = new System.Drawing.Point(396, 3);
             this.buttonApply.Name = "buttonApply";
             this.buttonApply.Size = new System.Drawing.Size(75, 23);
             this.buttonApply.TabIndex = 5;
@@ -120,7 +120,7 @@
             this.flowLayoutPanel1.Location = new System.Drawing.Point(5, 388);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(645, 28);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(474, 28);
             this.flowLayoutPanel1.TabIndex = 1;
             // 
             // tableLayoutPanel1
@@ -136,15 +136,16 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(655, 421);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(484, 421);
             this.tableLayoutPanel1.TabIndex = 3;
             // 
             // SettingsTabForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(655, 421);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(484, 421);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.MinimumSize = new System.Drawing.Size(500, 460);
             this.Name = "SettingsTabForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SettingsTabForm";
