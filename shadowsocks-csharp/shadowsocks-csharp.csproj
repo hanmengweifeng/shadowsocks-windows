@@ -215,6 +215,12 @@
     <Compile Include="View\QRCodeSplashForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="View\SettingsTabForm.cs">
+	  <SubType>Form</SubType>
+	</Compile>
+    <Compile Include="View\SettingsTabForm.Designer.cs">
+      <DependentUpon>SettingsTabForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\StatisticsStrategyConfigurationForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -244,6 +250,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="View\QRCodeForm.resx">
       <DependentUpon>QRCodeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\SettingsTabForm.resx">
+      <DependentUpon>SettingsTabForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\StatisticsStrategyConfigurationForm.resx">
       <DependentUpon>StatisticsStrategyConfigurationForm.cs</DependentUpon>

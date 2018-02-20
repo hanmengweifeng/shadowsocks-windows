@@ -52,12 +52,14 @@ namespace Shadowsocks.View
         private MenuItem autoCheckUpdatesToggleItem;
         private MenuItem checkPreReleaseToggleItem;
         private MenuItem proxyItem;
+        private MenuItem settingsItem;
         private MenuItem hotKeyItem;
         private MenuItem VerboseLoggingToggleItem;
         private ConfigForm configForm;
         private ProxyForm proxyForm;
         private LogForm logForm;
         private HotkeySettingsForm hotkeySettingsForm;
+        private SettingsTabForm settingsTabForm;
         private string _urlToOpen;
 
         public MenuViewController(ShadowsocksController controller)
@@ -289,6 +291,7 @@ namespace Shadowsocks.View
                 this.ShareOverLANItem = CreateMenuItem("Allow Clients from LAN", new EventHandler(this.ShareOverLANItem_Click)),
                 new MenuItem("-"),
                 this.hotKeyItem = CreateMenuItem("Edit Hotkeys...", new EventHandler(this.hotKeyItem_Click)),
+                this.settingsItem = CreateMenuItem("Settings...", new EventHandler(this.settingsItem_Click)),
                 CreateMenuGroup("Help", new MenuItem[] {
                     CreateMenuItem("Show Logs...", new EventHandler(this.ShowLogItem_Click)),
                     this.VerboseLoggingToggleItem = CreateMenuItem( "Verbose Logging", new EventHandler(this.VerboseLoggingToggleItem_Click) ),
@@ -500,6 +503,21 @@ namespace Shadowsocks.View
             }
         }
 
+        private void ShowSettingsTabForm()
+        {
+            if (settingsTabForm != null)
+            {
+                settingsTabForm.Activate();
+            }
+            else
+            {
+                settingsTabForm = new SettingsTabForm(controller);
+                settingsTabForm.Show();
+                settingsTabForm.Activate();
+                settingsTabForm.FormClosed += settingsTabForm_FormClosed;
+            }
+        }
+
         private void ShowLogForm()
         {
             if (logForm != null)
@@ -546,6 +564,14 @@ namespace Shadowsocks.View
         {
             hotkeySettingsForm.Dispose();
             hotkeySettingsForm = null;
+            Utils.ReleaseMemory(true);
+        }
+
+
+        void settingsTabForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            settingsTabForm.Dispose();
+            settingsTabForm = null;
             Utils.ReleaseMemory(true);
         }
 
@@ -883,6 +909,11 @@ namespace Shadowsocks.View
         private void hotKeyItem_Click(object sender, EventArgs e)
         {
             ShowHotKeySettingsForm();
+        }
+
+        private void settingsItem_Click(object sender, EventArgs e)
+        {
+            ShowSettingsTabForm();
         }
 
         private void ShowLogItem_Click(object sender, EventArgs e)
