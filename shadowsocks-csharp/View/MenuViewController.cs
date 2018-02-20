@@ -460,17 +460,17 @@ namespace Shadowsocks.View
 
         private void ShowConfigForm()
         {
-            if (configForm != null)
-            {
-                configForm.Activate();
-            }
-            else
-            {
-                configForm = new ConfigForm(controller);
-                configForm.Show();
-                configForm.Activate();
-                configForm.FormClosed += configForm_FormClosed;
-            }
+            //if (configForm != null)
+            //{
+            //    configForm.Activate();
+            //}
+            //else
+            //{
+            //    configForm = new ConfigForm(controller);
+            //    configForm.Show();
+            //    configForm.Activate();
+            //    configForm.FormClosed += configForm_FormClosed;
+            //}
         }
 
         private void ShowProxyForm()

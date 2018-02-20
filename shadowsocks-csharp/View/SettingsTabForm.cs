@@ -15,6 +15,8 @@ namespace Shadowsocks.View
     public partial class SettingsTabForm : Form
     {
         private ShadowsocksController controller;
+
+        private ConfigForm configForm;
         private ProxyForm proxyForm;
         private HotkeySettingsForm hotkeySettingsForm;
 
@@ -33,6 +35,10 @@ namespace Shadowsocks.View
 
         private void InitTabs()
         {
+            configForm = new ConfigForm(controller);
+            configForm.Dock = DockStyle.Fill;
+            tabPageServers.Controls.Add(configForm);
+
             proxyForm = new ProxyForm(controller);
             proxyForm.Dock = DockStyle.Fill;
             tabPageProxy.Controls.Add(proxyForm);

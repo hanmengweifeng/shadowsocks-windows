@@ -12,7 +12,7 @@ using Shadowsocks.Properties;
 
 namespace Shadowsocks.View
 {
-    public partial class ConfigForm : Form
+    public partial class ConfigForm : UserControl
     {
         private ShadowsocksController controller;
 
@@ -30,7 +30,7 @@ namespace Shadowsocks.View
             this.PerformLayout();
 
             UpdateTexts();
-            this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
+            //this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             this.controller = controller;
             controller.ConfigChanged += controller_ConfigChanged;
@@ -64,13 +64,6 @@ namespace Shadowsocks.View
         private void controller_ConfigChanged(object sender, EventArgs e)
         {
             LoadCurrentConfiguration();
-        }
-
-        private void ShowWindow()
-        {
-            this.Opacity = 1;
-            this.Show();
-            IPTextBox.Focus();
         }
 
         private bool SaveOldSelectedServer()
@@ -276,12 +269,12 @@ namespace Shadowsocks.View
             // We handled this in event handlers, e.g. Add/DeleteButton, SelectedIndexChanged
             // and move operations
             controller.SelectServerIndex(ServersListBox.SelectedIndex);
-            this.Close();
+            //this.Close();
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            //this.Close();
         }
 
         private void ConfigForm_Shown(object sender, EventArgs e)
