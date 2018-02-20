@@ -155,32 +155,27 @@ namespace Shadowsocks.View
             LoadSelectedServer();
         }
 
-        private void ConfigForm_Load(object sender, EventArgs e)
-        {
+        //private void ConfigForm_KeyDown(object sender, KeyEventArgs e)
+        //{
+        //    // Sometimes the users may hit enter key by mistake, and the form will close without saving entries.
 
-        }
+        //    if (e.KeyCode == Keys.Enter)
+        //    {
+        //        Server server = controller.GetCurrentServer();
+        //        if (!SaveOldSelectedServer())
+        //        {
+        //            return;
+        //        }
+        //        if (_modifiedConfiguration.configs.Count == 0)
+        //        {
+        //            MessageBox.Show(I18N.GetString("Please add at least one server"));
+        //            return;
+        //        }
+        //        controller.SaveServers(_modifiedConfiguration.configs, _modifiedConfiguration.localPort);
+        //        controller.SelectServerIndex(_modifiedConfiguration.configs.IndexOf(server));
+        //    }
 
-        private void ConfigForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Sometimes the users may hit enter key by mistake, and the form will close without saving entries.
-
-            if (e.KeyCode == Keys.Enter)
-            {
-                Server server = controller.GetCurrentServer();
-                if (!SaveOldSelectedServer())
-                {
-                    return;
-                }
-                if (_modifiedConfiguration.configs.Count == 0)
-                {
-                    MessageBox.Show(I18N.GetString("Please add at least one server"));
-                    return;
-                }
-                controller.SaveServers(_modifiedConfiguration.configs, _modifiedConfiguration.localPort);
-                controller.SelectServerIndex(_modifiedConfiguration.configs.IndexOf(server));
-            }
-
-        }
+        //}
 
         private void ServersListBox_SelectedIndexChanged(object sender, EventArgs e)
         {

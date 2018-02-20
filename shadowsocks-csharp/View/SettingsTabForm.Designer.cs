@@ -56,10 +56,11 @@
             // 
             // tabPageServers
             // 
+            this.tabPageServers.AutoScroll = true;
             this.tabPageServers.Location = new System.Drawing.Point(4, 22);
             this.tabPageServers.Name = "tabPageServers";
             this.tabPageServers.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageServers.Size = new System.Drawing.Size(631, 351);
+            this.tabPageServers.Size = new System.Drawing.Size(460, 351);
             this.tabPageServers.TabIndex = 0;
             this.tabPageServers.Text = "Servers";
             this.tabPageServers.UseVisualStyleBackColor = true;
@@ -78,7 +79,7 @@
             // 
             this.tabPageHotkey.Location = new System.Drawing.Point(4, 22);
             this.tabPageHotkey.Name = "tabPageHotkey";
-            this.tabPageHotkey.Size = new System.Drawing.Size(631, 351);
+            this.tabPageHotkey.Size = new System.Drawing.Size(460, 351);
             this.tabPageHotkey.TabIndex = 2;
             this.tabPageHotkey.Text = "Hotkey";
             this.tabPageHotkey.UseVisualStyleBackColor = true;

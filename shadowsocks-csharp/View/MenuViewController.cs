@@ -52,13 +52,13 @@ namespace Shadowsocks.View
         private MenuItem autoCheckUpdatesToggleItem;
         private MenuItem checkPreReleaseToggleItem;
         private MenuItem proxyItem;
-        private MenuItem settingsItem;
+        //private MenuItem settingsItem;
         private MenuItem hotKeyItem;
         private MenuItem VerboseLoggingToggleItem;
-        private ConfigForm configForm;
-        private ProxyForm proxyForm;
+        //private ConfigForm configForm;
+        //private ProxyForm proxyForm;
         private LogForm logForm;
-        private HotkeySettingsForm hotkeySettingsForm;
+        //private HotkeySettingsForm hotkeySettingsForm;
         private SettingsTabForm settingsTabForm;
         private string _urlToOpen;
 
@@ -291,7 +291,7 @@ namespace Shadowsocks.View
                 this.ShareOverLANItem = CreateMenuItem("Allow Clients from LAN", new EventHandler(this.ShareOverLANItem_Click)),
                 new MenuItem("-"),
                 this.hotKeyItem = CreateMenuItem("Edit Hotkeys...", new EventHandler(this.hotKeyItem_Click)),
-                this.settingsItem = CreateMenuItem("Settings...", new EventHandler(this.settingsItem_Click)),
+                //this.settingsItem = CreateMenuItem("Settings...", new EventHandler(this.settingsItem_Click)),
                 CreateMenuGroup("Help", new MenuItem[] {
                     CreateMenuItem("Show Logs...", new EventHandler(this.ShowLogItem_Click)),
                     this.VerboseLoggingToggleItem = CreateMenuItem( "Verbose Logging", new EventHandler(this.VerboseLoggingToggleItem_Click) ),
@@ -460,58 +460,29 @@ namespace Shadowsocks.View
 
         private void ShowConfigForm()
         {
-            //if (configForm != null)
-            //{
-            //    configForm.Activate();
-            //}
-            //else
-            //{
-            //    configForm = new ConfigForm(controller);
-            //    configForm.Show();
-            //    configForm.Activate();
-            //    configForm.FormClosed += configForm_FormClosed;
-            //}
+            ShowSettingsTabForm(typeof(ConfigForm));
         }
 
         private void ShowProxyForm()
         {
-            //if (proxyForm != null)
-            //{
-            //    proxyForm.Activate();
-            //}
-            //else
-            //{
-            //    proxyForm = new ProxyForm(controller);
-            //    proxyForm.Show();
-            //    proxyForm.Activate();
-            //    proxyForm.FormClosed += proxyForm_FormClosed;
-            //}
+            ShowSettingsTabForm(typeof(ProxyForm));
         }
 
         private void ShowHotKeySettingsForm()
         {
-            //if (hotkeySettingsForm != null)
-            //{
-            //    hotkeySettingsForm.Activate();
-            //}
-            //else
-            //{
-            //    hotkeySettingsForm = new HotkeySettingsForm(controller);
-            //    hotkeySettingsForm.Show();
-            //    hotkeySettingsForm.Activate();
-            //    hotkeySettingsForm.FormClosed += hotkeySettingsForm_FormClosed;
-            //}
+            ShowSettingsTabForm(typeof(HotkeySettingsForm));
         }
 
-        private void ShowSettingsTabForm()
+        private void ShowSettingsTabForm(Type selectedForm = null)
         {
             if (settingsTabForm != null)
             {
+                settingsTabForm.SelectTabByForm(selectedForm);
                 settingsTabForm.Activate();
             }
             else
             {
-                settingsTabForm = new SettingsTabForm(controller);
+                settingsTabForm = new SettingsTabForm(controller, selectedForm);
                 settingsTabForm.Show();
                 settingsTabForm.Activate();
                 settingsTabForm.FormClosed += settingsTabForm_FormClosed;
@@ -540,10 +511,10 @@ namespace Shadowsocks.View
             Utils.ReleaseMemory(true);
         }
 
-        void configForm_FormClosed(object sender, FormClosedEventArgs e)
+        void settingsTabForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            configForm.Dispose();
-            configForm = null;
+            settingsTabForm.Dispose();
+            settingsTabForm = null;
             Utils.ReleaseMemory(true);
             if (_isFirstRun)
             {
@@ -551,28 +522,6 @@ namespace Shadowsocks.View
                 ShowFirstTimeBalloon();
                 _isFirstRun = false;
             }
-        }
-
-        void proxyForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            proxyForm.Dispose();
-            proxyForm = null;
-            Utils.ReleaseMemory(true);
-        }
-
-        void hotkeySettingsForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            hotkeySettingsForm.Dispose();
-            hotkeySettingsForm = null;
-            Utils.ReleaseMemory(true);
-        }
-
-
-        void settingsTabForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            settingsTabForm.Dispose();
-            settingsTabForm = null;
-            Utils.ReleaseMemory(true);
         }
 
         private void Config_Click(object sender, EventArgs e)
@@ -911,10 +860,10 @@ namespace Shadowsocks.View
             ShowHotKeySettingsForm();
         }
 
-        private void settingsItem_Click(object sender, EventArgs e)
-        {
-            ShowSettingsTabForm();
-        }
+        //private void settingsItem_Click(object sender, EventArgs e)
+        //{
+        //    ShowSettingsTabForm();
+        //}
 
         private void ShowLogItem_Click(object sender, EventArgs e)
         {
