@@ -15,6 +15,7 @@ namespace Shadowsocks.View
     public partial class SettingsTabForm : Form
     {
         private ShadowsocksController controller;
+        private ProxyForm proxyForm;
 
         public SettingsTabForm(ShadowsocksController controller)
         {
@@ -24,6 +25,16 @@ namespace Shadowsocks.View
             this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             this.controller = controller;
+
+            InitTabs();
         }
+
+        private void InitTabs()
+        {
+            proxyForm = new ProxyForm(controller);
+            proxyForm.Dock = DockStyle.Fill;
+            tabPageProxy.Controls.Add(proxyForm);
+        }
+
     }
 }

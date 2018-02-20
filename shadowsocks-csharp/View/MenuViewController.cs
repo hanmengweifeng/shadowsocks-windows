@@ -475,17 +475,17 @@ namespace Shadowsocks.View
 
         private void ShowProxyForm()
         {
-            if (proxyForm != null)
-            {
-                proxyForm.Activate();
-            }
-            else
-            {
-                proxyForm = new ProxyForm(controller);
-                proxyForm.Show();
-                proxyForm.Activate();
-                proxyForm.FormClosed += proxyForm_FormClosed;
-            }
+            //if (proxyForm != null)
+            //{
+            //    proxyForm.Activate();
+            //}
+            //else
+            //{
+            //    proxyForm = new ProxyForm(controller);
+            //    proxyForm.Show();
+            //    proxyForm.Activate();
+            //    proxyForm.FormClosed += proxyForm_FormClosed;
+            //}
         }
 
         private void ShowHotKeySettingsForm()

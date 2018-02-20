@@ -7,7 +7,7 @@ using Shadowsocks.Properties;
 
 namespace Shadowsocks.View
 {
-    public partial class ProxyForm : Form
+    public partial class ProxyForm : UserControl
     {
         private ShadowsocksController controller;
 
@@ -20,7 +20,7 @@ namespace Shadowsocks.View
             InitializeComponent();
 
             UpdateTexts();
-            this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
+            //this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             this.controller = controller;
             controller.ConfigChanged += controller_ConfigChanged;
@@ -91,12 +91,12 @@ namespace Shadowsocks.View
 
             controller.SaveProxy(_modifiedProxyConfig);
 
-            this.Close();
+            //this.Close();
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            //this.Close();
         }
 
         private void ProxyForm_FormClosed(object sender, FormClosedEventArgs e)

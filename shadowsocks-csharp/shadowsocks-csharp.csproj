@@ -201,7 +201,7 @@
     </Compile>
     <Compile Include="View\MenuViewController.cs" />
     <Compile Include="View\ProxyForm.cs">
-      <SubType>Form</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="View\ProxyForm.Designer.cs">
       <DependentUpon>ProxyForm.cs</DependentUpon>
