@@ -30,9 +30,16 @@ namespace Shadowsocks.View
 
             this.controller = controller;
 
+            UpdateTexts();
+
             InitTabs();
 
             SelectTabByForm(selectedFormType);
+        }
+
+        private void UpdateTexts()
+        {
+            //todo
         }
 
         private void InitTabs()
@@ -66,5 +73,25 @@ namespace Shadowsocks.View
             }
         }
 
+        private void buttonOK_Click(object sender, EventArgs e)
+        {
+            buttonApply_Click(sender, e);
+            buttonCancel_Click(sender, e);
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            configForm.Dispose();
+            proxyForm.Dispose();
+            hotkeySettingsForm.Dispose();
+            this.Close();
+        }
+
+        private void buttonApply_Click(object sender, EventArgs e)
+        {
+            configForm.SaveChangesThenSelect();
+            proxyForm.SaveChanges();
+            hotkeySettingsForm.RegisterThenSave();
+        }
     }
 }

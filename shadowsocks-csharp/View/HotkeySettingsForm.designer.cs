@@ -28,10 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-            this.btnRegisterAll = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnOK = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.SwitchSystemProxyLabel = new System.Windows.Forms.Label();
             this.SwitchProxyModeLabel = new System.Windows.Forms.Label();
@@ -45,58 +41,8 @@
             this.ShowLogsTextBox = new System.Windows.Forms.TextBox();
             this.ServerMoveUpTextBox = new System.Windows.Forms.TextBox();
             this.ServerMoveDownTextBox = new System.Windows.Forms.TextBox();
-            flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            flowLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // flowLayoutPanel1
-            // 
-            flowLayoutPanel1.AutoSize = true;
-            flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutPanel1.SetColumnSpan(flowLayoutPanel1, 2);
-            flowLayoutPanel1.Controls.Add(this.btnRegisterAll);
-            flowLayoutPanel1.Controls.Add(this.btnCancel);
-            flowLayoutPanel1.Controls.Add(this.btnOK);
-            flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Right;
-            flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            flowLayoutPanel1.Location = new System.Drawing.Point(50, 165);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new System.Drawing.Size(387, 56);
-            flowLayoutPanel1.TabIndex = 6;
-            // 
-            // btnRegisterAll
-            // 
-            this.btnRegisterAll.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnRegisterAll.Location = new System.Drawing.Point(261, 3);
-            this.btnRegisterAll.Name = "btnRegisterAll";
-            this.btnRegisterAll.Size = new System.Drawing.Size(123, 31);
-            this.btnRegisterAll.TabIndex = 2;
-            this.btnRegisterAll.Text = "Reg All";
-            this.btnRegisterAll.UseVisualStyleBackColor = true;
-            this.btnRegisterAll.Click += new System.EventHandler(this.RegisterAllButton_Click);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(132, 3);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(123, 31);
-            this.btnCancel.TabIndex = 1;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.CancelButton_Click);
-            // 
-            // btnOK
-            // 
-            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(3, 3);
-            this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(123, 31);
-            this.btnOK.TabIndex = 0;
-            this.btnOK.Text = "OK";
-            this.btnOK.UseVisualStyleBackColor = true;
-            this.btnOK.Click += new System.EventHandler(this.OKButton_Click);
             // 
             // tableLayoutPanel1
             // 
@@ -115,7 +61,6 @@
             this.tableLayoutPanel1.Controls.Add(this.ShowLogsTextBox, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.ServerMoveUpTextBox, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.ServerMoveDownTextBox, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(flowLayoutPanel1, 0, 6);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -127,7 +72,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(440, 224);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(440, 180);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // SwitchSystemProxyLabel
@@ -288,8 +233,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "HotkeySettingsForm";
-            this.Size = new System.Drawing.Size(440, 224);
-            flowLayoutPanel1.ResumeLayout(false);
+            this.Size = new System.Drawing.Size(440, 180);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
@@ -303,15 +247,12 @@
         private System.Windows.Forms.Label ShowLogsLabel;
         private System.Windows.Forms.Label ServerMoveUpLabel;
         private System.Windows.Forms.Label ServerMoveDownLabel;
-        private System.Windows.Forms.Button btnOK;
-        private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.TextBox ShowLogsTextBox;
         private System.Windows.Forms.TextBox SwitchAllowLanTextBox;
         private System.Windows.Forms.TextBox SwitchProxyModeTextBox;
         private System.Windows.Forms.TextBox SwitchSystemProxyTextBox;
         private System.Windows.Forms.TextBox ServerMoveUpTextBox;
         private System.Windows.Forms.TextBox ServerMoveDownTextBox;
-        private System.Windows.Forms.Button btnRegisterAll;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
     }
 }

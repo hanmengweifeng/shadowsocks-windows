@@ -23,7 +23,7 @@ namespace Shadowsocks.View
             //this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             this.controller = controller;
-            controller.ConfigChanged += controller_ConfigChanged;
+            //controller.ConfigChanged += controller_ConfigChanged;
 
             UpdateEnabled();
             LoadCurrentConfiguration();
@@ -37,15 +37,15 @@ namespace Shadowsocks.View
             ProxyPortLabel.Text = I18N.GetString("Proxy Port");
             ProxyTimeoutLabel.Text = I18N.GetString("Timeout(Sec)");
             ProxyNotificationLabel.Text = I18N.GetString("If server has a plugin, proxy will not be used");
-            OKButton.Text = I18N.GetString("OK");
-            MyCancelButton.Text = I18N.GetString("Cancel");
+            //OKButton.Text = I18N.GetString("OK");
+            //MyCancelButton.Text = I18N.GetString("Cancel");
             this.Text = I18N.GetString("Edit Proxy");
         }
 
-        private void controller_ConfigChanged(object sender, EventArgs e)
-        {
-            LoadCurrentConfiguration();
-        }
+        //private void controller_ConfigChanged(object sender, EventArgs e)
+        //{
+        //    LoadCurrentConfiguration();
+        //}
 
         private void LoadCurrentConfiguration()
         {
@@ -57,7 +57,7 @@ namespace Shadowsocks.View
             ProxyTypeComboBox.SelectedIndex = _modifiedProxyConfig.proxyType;
         }
 
-        private void OKButton_Click(object sender, EventArgs e)
+        public void SaveChanges()
         {
 
             if (_modifiedProxyConfig.useProxy=UseProxyCheckBox.Checked)
@@ -94,15 +94,15 @@ namespace Shadowsocks.View
             //this.Close();
         }
 
-        private void CancelButton_Click(object sender, EventArgs e)
-        {
-            //this.Close();
-        }
+        //private void CancelButton_Click(object sender, EventArgs e)
+        //{
+        //    //this.Close();
+        //}
 
-        private void ProxyForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            controller.ConfigChanged -= controller_ConfigChanged;
-        }
+        //private void ProxyForm_FormClosed(object sender, FormClosedEventArgs e)
+        //{
+        //    controller.ConfigChanged -= controller_ConfigChanged;
+        //}
 
         private void UseProxyCheckBox_CheckedChanged(object sender, EventArgs e)
         {

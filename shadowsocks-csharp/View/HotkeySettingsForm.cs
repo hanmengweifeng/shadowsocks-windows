@@ -31,7 +31,7 @@ namespace Shadowsocks.View
             //Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             _controller = controller;
-            _controller.ConfigChanged += controller_ConfigChanged;
+            //_controller.ConfigChanged += controller_ConfigChanged;
 
             LoadCurrentConfiguration();
 
@@ -40,10 +40,10 @@ namespace Shadowsocks.View
             if (!_allTextBoxes.Any()) throw new Exception("Cannot get all textboxes");
         }
 
-        private void controller_ConfigChanged(object sender, EventArgs e)
-        {
-            LoadCurrentConfiguration();
-        }
+        //private void controller_ConfigChanged(object sender, EventArgs e)
+        //{
+        //    LoadCurrentConfiguration();
+        //}
 
         private void LoadCurrentConfiguration()
         {
@@ -70,9 +70,9 @@ namespace Shadowsocks.View
             ShowLogsLabel.Text = I18N.GetString("Show Logs");
             ServerMoveUpLabel.Text = I18N.GetString("Switch to prev server");
             ServerMoveDownLabel.Text = I18N.GetString("Switch to next server");
-            btnOK.Text = I18N.GetString("OK");
-            btnCancel.Text = I18N.GetString("Cancel");
-            btnRegisterAll.Text = I18N.GetString("Reg All");
+            //btnOK.Text = I18N.GetString("OK");
+            //btnCancel.Text = I18N.GetString("Cancel");
+            //btnRegisterAll.Text = I18N.GetString("Reg All");
             Text = I18N.GetString("Edit Hotkeys...");
         }
 
@@ -153,14 +153,22 @@ namespace Shadowsocks.View
             UnregPrevHotkey(callBack);
         }
 
-        private void CancelButton_Click(object sender, EventArgs e)
+        //private void CancelButton_Click(object sender, EventArgs e)
+        //{
+        //    //Close();
+        //}
+
+        public void RegisterThenSave()
         {
-            //Close();
+            if (RegisterAll())
+                SaveConfig();
         }
 
-        private void OKButton_Click(object sender, EventArgs e)
+        /// <summary>
+        /// try to register, notify to change settings if failed
+        /// </summary>
+        public bool RegisterAll()
         {
-            // try to register, notify to change settings if failed
             foreach (var tb in _allTextBoxes)
             {
                 if (tb.Text.IsNullOrEmpty())
@@ -170,25 +178,10 @@ namespace Shadowsocks.View
                 if (!TryRegHotkey(tb))
                 {
                     MessageBox.Show(I18N.GetString("Register hotkey failed"));
-                    return;
+                    return false;
                 }
             }
-
-            // All check passed, saving
-            SaveConfig();
-            //Close();
-        }
-
-        private void RegisterAllButton_Click(object sender, EventArgs e)
-        {
-            foreach (var tb in _allTextBoxes)
-            {
-                if (tb.Text.IsNullOrEmpty())
-                {
-                    continue;
-                }
-                TryRegHotkey(tb);
-            }
+            return true;
         }
 
         private bool TryRegHotkey(TextBox tb)

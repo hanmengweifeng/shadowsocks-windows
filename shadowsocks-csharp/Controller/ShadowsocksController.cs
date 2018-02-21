@@ -244,6 +244,10 @@ namespace Shadowsocks.Controller
         {
             _config.proxy = proxyConfig;
             SaveConfig(_config);
+            if (ConfigChanged != null)
+            {
+                ConfigChanged(this, new EventArgs());
+            }
         }
 
         public void ToggleVerboseLogging(bool enabled)

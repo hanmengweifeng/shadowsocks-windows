@@ -33,7 +33,7 @@ namespace Shadowsocks.View
             //this.Icon = Icon.FromHandle(Resources.ssw128.GetHicon());
 
             this.controller = controller;
-            controller.ConfigChanged += controller_ConfigChanged;
+            //controller.ConfigChanged += controller_ConfigChanged;
 
             LoadCurrentConfiguration();
         }
@@ -54,17 +54,17 @@ namespace Shadowsocks.View
             RemarksLabel.Text = I18N.GetString("Remarks");
             TimeoutLabel.Text = I18N.GetString("Timeout(Sec)");
             ServerGroupBox.Text = I18N.GetString("Server");
-            OKButton.Text = I18N.GetString("OK");
-            MyCancelButton.Text = I18N.GetString("Cancel");
+            //OKButton.Text = I18N.GetString("OK");
+            //MyCancelButton.Text = I18N.GetString("Cancel");
             MoveUpButton.Text = I18N.GetString("Move &Up");
             MoveDownButton.Text = I18N.GetString("Move D&own");
             this.Text = I18N.GetString("Edit Servers");
         }
 
-        private void controller_ConfigChanged(object sender, EventArgs e)
-        {
-            LoadCurrentConfiguration();
-        }
+        //private void controller_ConfigChanged(object sender, EventArgs e)
+        //{
+        //    LoadCurrentConfiguration();
+        //}
 
         private bool SaveOldSelectedServer()
         {
@@ -248,7 +248,7 @@ namespace Shadowsocks.View
             LoadSelectedServer();
         }
 
-        private void OKButton_Click(object sender, EventArgs e)
+        public void SaveChangesThenSelect()
         {
             if (!SaveOldSelectedServer())
             {
@@ -267,20 +267,20 @@ namespace Shadowsocks.View
             //this.Close();
         }
 
-        private void CancelButton_Click(object sender, EventArgs e)
-        {
-            //this.Close();
-        }
+        //private void CancelButton_Click(object sender, EventArgs e)
+        //{
+        //    //this.Close();
+        //}
 
         private void ConfigForm_Shown(object sender, EventArgs e)
         {
             IPTextBox.Focus();
         }
 
-        private void ConfigForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            controller.ConfigChanged -= controller_ConfigChanged;
-        }
+        //private void ConfigForm_FormClosed(object sender, FormClosedEventArgs e)
+        //{
+        //    controller.ConfigChanged -= controller_ConfigChanged;
+        //}
 
         private void MoveConfigItem(int step)
         {
