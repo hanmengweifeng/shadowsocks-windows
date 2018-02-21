@@ -46,15 +46,36 @@ namespace Shadowsocks.View
         {
             configForm = new ConfigForm(controller);
             //configForm.Dock = DockStyle.Fill;
+            configForm.DirtyStateChanged += ConfigForm_DirtyStateChanged;
             tabPageServers.Controls.Add(configForm);
 
             proxyForm = new ProxyForm(controller);
             proxyForm.Dock = DockStyle.Fill;
+            proxyForm.DirtyStateChanged += ProxyForm_DirtyStateChanged;
             tabPageProxy.Controls.Add(proxyForm);
 
             hotkeySettingsForm = new HotkeySettingsForm(controller);
             hotkeySettingsForm.Dock = DockStyle.Fill;
+            hotkeySettingsForm.DirtyStateChanged += HotkeySettingsForm_DirtyStateChanged;
             tabPageHotkey.Controls.Add(hotkeySettingsForm);
+        }
+
+        private void ConfigForm_DirtyStateChanged(object sender, EventArgs e)
+        {
+            tabPageServers.Text = configForm.isDirty ?
+                                  tabPageServers.Text + " *" : tabPageServers.Text.Replace(" *", "");
+        }
+
+        private void ProxyForm_DirtyStateChanged(object sender, EventArgs e)
+        {
+            tabPageProxy.Text = proxyForm.isDirty ?
+                                tabPageProxy.Text + " *" : tabPageProxy.Text.Replace(" *", "");
+        }
+
+        private void HotkeySettingsForm_DirtyStateChanged(object sender, EventArgs e)
+        {
+            tabPageHotkey.Text = hotkeySettingsForm.isDirty ?
+                                 tabPageHotkey.Text + " *" : tabPageHotkey.Text.Replace(" *", "");
         }
 
         public void SelectTabByForm(Type formType)
@@ -75,8 +96,8 @@ namespace Shadowsocks.View
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-            buttonApply_Click(sender, e);
-            buttonCancel_Click(sender, e);
+            if (SaveAllChanges())
+                buttonCancel_Click(sender, e);
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -89,9 +110,41 @@ namespace Shadowsocks.View
 
         private void buttonApply_Click(object sender, EventArgs e)
         {
-            configForm.SaveChangesThenSelect();
-            proxyForm.SaveChanges();
-            hotkeySettingsForm.RegisterThenSave();
+            SaveAllChanges();
+        }
+
+        private bool SaveAllChanges()
+        {
+            bool success = true;
+            if (configForm.isDirty)
+            {
+                if (configForm.SaveChangesThenSelect())
+                    configForm.isDirty = false;
+                else
+                    success = false;
+            }
+            if (proxyForm.isDirty)
+            {
+                if (proxyForm.SaveChanges())
+                    proxyForm.isDirty = false;
+                else
+                    success = false;
+            }
+            if (hotkeySettingsForm.isDirty)
+            {
+                if (hotkeySettingsForm.RegisterThenSave())
+                    hotkeySettingsForm.isDirty = false;
+                else
+                    success = false;
+            }
+            return success;
+        }
+
+        private void SettingsTabForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            configForm.DirtyStateChanged -= ConfigForm_DirtyStateChanged;
+            proxyForm.DirtyStateChanged -= ProxyForm_DirtyStateChanged;
+            hotkeySettingsForm.DirtyStateChanged -= HotkeySettingsForm_DirtyStateChanged;
         }
     }
 }

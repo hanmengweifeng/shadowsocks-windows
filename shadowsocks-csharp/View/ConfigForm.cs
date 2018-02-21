@@ -14,6 +14,22 @@ namespace Shadowsocks.View
 {
     public partial class ConfigForm : UserControl
     {
+        private bool _isDirty;
+        public bool isDirty
+        {
+            get { return _isDirty; }
+            set
+            {
+                if (value != _isDirty)
+                {
+                    _isDirty = value;
+                    DirtyStateChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public event EventHandler DirtyStateChanged;
+
         private ShadowsocksController controller;
 
         // this is a copy of configuration that we are working on
@@ -36,6 +52,8 @@ namespace Shadowsocks.View
             //controller.ConfigChanged += controller_ConfigChanged;
 
             LoadCurrentConfiguration();
+
+            AssignHandlersForControls(this.Controls);
         }
 
         private void UpdateTexts()
@@ -216,14 +234,14 @@ namespace Shadowsocks.View
             _lastSelectedIndex = ServersListBox.SelectedIndex;
         }
 
-        private void DuplicateButton_Click( object sender, EventArgs e )
+        private void DuplicateButton_Click(object sender, EventArgs e)
         {
             if (!SaveOldSelectedServer())
             {
                 return;
             }
             Server currServer = _modifiedConfiguration.configs[_lastSelectedIndex];
-            var currIndex = _modifiedConfiguration.configs.IndexOf( currServer );
+            var currIndex = _modifiedConfiguration.configs.IndexOf(currServer);
             _modifiedConfiguration.configs.Insert(currIndex + 1, currServer);
             LoadConfiguration(_modifiedConfiguration);
             ServersListBox.SelectedIndex = currIndex + 1;
@@ -248,16 +266,16 @@ namespace Shadowsocks.View
             LoadSelectedServer();
         }
 
-        public void SaveChangesThenSelect()
+        public bool SaveChangesThenSelect()
         {
             if (!SaveOldSelectedServer())
             {
-                return;
+                return false;
             }
             if (_modifiedConfiguration.configs.Count == 0)
             {
                 MessageBox.Show(I18N.GetString("Please add at least one server"));
-                return;
+                return false;
             }
             controller.SaveServers(_modifiedConfiguration.configs, _modifiedConfiguration.localPort);
             // SelectedIndex remains valid
@@ -265,6 +283,7 @@ namespace Shadowsocks.View
             // and move operations
             controller.SelectServerIndex(ServersListBox.SelectedIndex);
             //this.Close();
+            return true;
         }
 
         //private void CancelButton_Click(object sender, EventArgs e)
@@ -351,6 +370,59 @@ namespace Shadowsocks.View
         private void ShowPasswdCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             this.PasswordTextBox.UseSystemPasswordChar = !this.ShowPasswdCheckBox.Checked;
+        }
+
+        #region isDirty triggers
+        //todo: split this to an individual class
+        private void AssignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged += DirtyTracker_ValueChanged;
+
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged += DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged += DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    AssignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void UnassignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged -= DirtyTracker_ValueChanged;
+
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged -= DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged -= DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    UnassignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void DirtyTracker_ValueChanged(object sender, EventArgs e)
+        {
+            isDirty = true;
+        }
+
+        #endregion
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            UnassignHandlersForControls(this.Controls);
+            base.OnHandleDestroyed(e);
         }
     }
 }

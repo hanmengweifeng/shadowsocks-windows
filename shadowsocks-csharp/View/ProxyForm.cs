@@ -9,6 +9,21 @@ namespace Shadowsocks.View
 {
     public partial class ProxyForm : UserControl
     {
+        private bool _isDirty;
+        public bool isDirty
+        {
+            get { return _isDirty; }
+            set
+            {
+                if (value != _isDirty)
+                {
+                    _isDirty = value;
+                    DirtyStateChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event EventHandler DirtyStateChanged;
+
         private ShadowsocksController controller;
 
         // this is a copy of configuration that we are working on
@@ -27,6 +42,8 @@ namespace Shadowsocks.View
 
             UpdateEnabled();
             LoadCurrentConfiguration();
+
+            AssignHandlersForControls(this.Controls);
         }
 
         private void UpdateTexts()
@@ -57,21 +74,21 @@ namespace Shadowsocks.View
             ProxyTypeComboBox.SelectedIndex = _modifiedProxyConfig.proxyType;
         }
 
-        public void SaveChanges()
+        public bool SaveChanges()
         {
 
-            if (_modifiedProxyConfig.useProxy=UseProxyCheckBox.Checked)
+            if (_modifiedProxyConfig.useProxy = UseProxyCheckBox.Checked)
             {
                 if (!int.TryParse(ProxyPortTextBox.Text, out _modifiedProxyConfig.proxyPort))
                 {
                     MessageBox.Show(I18N.GetString("Illegal port number format"));
-                    return;
+                    return false;
                 }
 
                 if (!int.TryParse(ProxyTimeoutTextBox.Text, out _modifiedProxyConfig.proxyTimeout))
                 {
                     MessageBox.Show(I18N.GetString("Illegal timeout format"));
-                    return;
+                    return false;
                 }
 
                 _modifiedProxyConfig.proxyType = ProxyTypeComboBox.SelectedIndex;
@@ -85,13 +102,14 @@ namespace Shadowsocks.View
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
-                    return;
+                    return false;
                 }
             }
 
             controller.SaveProxy(_modifiedProxyConfig);
 
             //this.Close();
+            return true;
         }
 
         //private void CancelButton_Click(object sender, EventArgs e)
@@ -113,9 +131,9 @@ namespace Shadowsocks.View
         {
             if (UseProxyCheckBox.Checked)
             {
-                ProxyServerTextBox.Enabled = 
-                ProxyPortTextBox.Enabled = 
-                ProxyTimeoutTextBox.Enabled = 
+                ProxyServerTextBox.Enabled =
+                ProxyPortTextBox.Enabled =
+                ProxyTimeoutTextBox.Enabled =
                 ProxyTypeComboBox.Enabled = true;
             }
             else
@@ -123,8 +141,61 @@ namespace Shadowsocks.View
                 ProxyServerTextBox.Enabled =
                 ProxyPortTextBox.Enabled =
                 ProxyTimeoutTextBox.Enabled =
-                ProxyTypeComboBox.Enabled = false; 
+                ProxyTypeComboBox.Enabled = false;
             }
+        }
+
+        #region isDirty triggers
+        //todo: split this to an individual class
+        private void AssignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged += DirtyTracker_ValueChanged;
+
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged += DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged += DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    AssignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void UnassignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged -= DirtyTracker_ValueChanged;
+
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged -= DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged -= DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    UnassignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void DirtyTracker_ValueChanged(object sender, EventArgs e)
+        {
+            isDirty = true;
+        }
+
+        #endregion
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            UnassignHandlersForControls(this.Controls);
+            base.OnHandleDestroyed(e);
         }
     }
 }

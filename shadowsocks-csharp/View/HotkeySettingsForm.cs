@@ -16,6 +16,20 @@ namespace Shadowsocks.View
 {
     public partial class HotkeySettingsForm : UserControl
     {
+        private bool _isDirty;
+        public bool isDirty
+        {
+            get { return _isDirty; }
+            set
+            {
+                if (value != _isDirty)
+                {
+                    _isDirty = value;
+                    DirtyStateChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event EventHandler DirtyStateChanged;
         private readonly ShadowsocksController _controller;
 
         // this is a copy of configuration that we are working on
@@ -38,6 +52,8 @@ namespace Shadowsocks.View
             // get all textboxes belong to this form
             _allTextBoxes = tableLayoutPanel1.GetChildControls<TextBox>();
             if (!_allTextBoxes.Any()) throw new Exception("Cannot get all textboxes");
+
+            AssignHandlersForControls(this.Controls);
         }
 
         //private void controller_ConfigChanged(object sender, EventArgs e)
@@ -158,10 +174,14 @@ namespace Shadowsocks.View
         //    //Close();
         //}
 
-        public void RegisterThenSave()
+        public bool RegisterThenSave()
         {
             if (RegisterAll())
+            {
                 SaveConfig();
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -238,7 +258,58 @@ namespace Shadowsocks.View
             _controller.SaveHotkeyConfig(_modifiedHotkeyConfig);
         }
 
+        #region isDirty triggers
+        //todo: split this to an individual class
+        private void AssignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged += DirtyTracker_ValueChanged;
 
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged += DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged += DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    AssignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void UnassignHandlersForControls(ControlCollection collection)
+        {
+            foreach (Control c in collection)
+            {
+                if (c is TextBoxBase)
+                    (c as TextBoxBase).TextChanged -= DirtyTracker_ValueChanged;
+
+                if (c is CheckBox)
+                    (c as CheckBox).CheckedChanged -= DirtyTracker_ValueChanged;
+
+                if (c is ComboBox)
+                    (c as ComboBox).SelectedIndexChanged -= DirtyTracker_ValueChanged;
+
+                // recurively apply to inner collections
+                if (c.HasChildren)
+                    UnassignHandlersForControls(c.Controls);
+            }
+        }
+
+        private void DirtyTracker_ValueChanged(object sender, EventArgs e)
+        {
+            isDirty = true;
+        }
+
+        #endregion
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            UnassignHandlersForControls(this.Controls);
+            base.OnHandleDestroyed(e);
+        }
 
         #region Prepare hotkey
 

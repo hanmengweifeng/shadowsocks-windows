@@ -153,6 +153,7 @@
             this.Name = "SettingsTabForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SettingsTabForm";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SettingsTabForm_FormClosed);
             this.tabControl1.ResumeLayout(false);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
