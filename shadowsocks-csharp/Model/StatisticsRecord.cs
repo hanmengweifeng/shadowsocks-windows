@@ -33,22 +33,29 @@ namespace Shadowsocks.Model
             => (AverageOutboundSpeed == null) && (MinOutboundSpeed == null) && (MaxOutboundSpeed == null);
 
         // if user disabled ping test, response would be null
-        public int? AverageResponse;
-        public int? MinResponse;
-        public int? MaxResponse;
+        public int? AverageRoundtripTime;
+        public int? MinRoundtripTime;
+        public int? MaxRoundtripTime;
         public float? PackageLoss;
 
-        private bool EmptyResponseData
-            => (AverageResponse == null) && (MinResponse == null) && (MaxResponse == null) && (PackageLoss == null);
+        private bool EmptyRoundtripData
+            => (AverageRoundtripTime == null) && (MinRoundtripTime == null) && (MaxRoundtripTime == null) && (PackageLoss == null);
 
         public bool IsEmptyData() {
-            return EmptyInboundSpeedData && EmptyOutboundSpeedData && EmptyResponseData && EmptyLatencyData;
+            return EmptyInboundSpeedData && EmptyOutboundSpeedData && EmptyRoundtripData && EmptyLatencyData;
         }
 
         public StatisticsRecord()
         {
         }
 
+        /// <summary>
+        /// TCP records
+        /// </summary>
+        /// <param name="identifier"></param>
+        /// <param name="inboundSpeedRecords"></param>
+        /// <param name="outboundSpeedRecords"></param>
+        /// <param name="latencyRecords"></param>
         public StatisticsRecord(string identifier, ICollection<int> inboundSpeedRecords, ICollection<int> outboundSpeedRecords, ICollection<int> latencyRecords)
         {
             ServerIdentifier = identifier;
@@ -75,21 +82,26 @@ namespace Shadowsocks.Model
             }
         }
 
-        public StatisticsRecord(string identifier, ICollection<int?> responseRecords)
+        /// <summary>
+        /// ICMP (ping) records
+        /// </summary>
+        /// <param name="identifier"></param>
+        /// <param name="roundtripRecords"></param>
+        public StatisticsRecord(string identifier, ICollection<int?> roundtripRecords)
         {
             ServerIdentifier = identifier;
-            SetResponse(responseRecords);
+            SetRoundtripTime(roundtripRecords);
         }
 
-        public void SetResponse(ICollection<int?> responseRecords)
+        public void SetRoundtripTime(ICollection<int?> roundtripTimeRecords)
         {
-            if (responseRecords == null) return;
-            var records = responseRecords.Where(response => response != null).Select(response => response.Value).ToList();
+            if (roundtripTimeRecords == null) return;
+            var records = roundtripTimeRecords.Where(response => response != null).Select(response => response.Value).ToList();
             if (!records.Any()) return;
-            AverageResponse = (int?) records.Average();
-            MinResponse = records.Min();
-            MaxResponse = records.Max();
-            PackageLoss = responseRecords.Count(response => response != null)/(float) responseRecords.Count;
+            AverageRoundtripTime = (int?)records.Average();
+            MinRoundtripTime = records.Min();
+            MaxRoundtripTime = records.Max();
+            PackageLoss = roundtripTimeRecords.Count(response => response != null) / (float)roundtripTimeRecords.Count;
         }
     }
 }

@@ -458,29 +458,29 @@ namespace Shadowsocks.Controller
             }
         }
 
-        public void UpdateLatency(Server server, TimeSpan latency)
+        public void UpdateServerLatency(Server server, TimeSpan latency)
         {
             if (_config.availabilityStatistics)
             {
-                availabilityStatistics.UpdateLatency(server, (int)latency.TotalMilliseconds);
+                availabilityStatistics.UpdateServerLatency(server, (int)latency.TotalMilliseconds);
             }
         }
 
-        public void UpdateInboundCounter(Server server, long n)
+        public void UpdateServerInboundCumulativeCounter(Server server, long n)
         {
             Interlocked.Add(ref _inboundCounter, n);
             if (_config.availabilityStatistics)
             {
-                availabilityStatistics.UpdateInboundCounter(server, n);
+                availabilityStatistics.UpdateServerInboundCumulativeCounter(server, n);
             }
         }
 
-        public void UpdateOutboundCounter(Server server, long n)
+        public void UpdateServerOutboundCumulativeCounter(Server server, long n)
         {
             Interlocked.Add(ref _outboundCounter, n);
             if (_config.availabilityStatistics)
             {
-                availabilityStatistics.UpdateOutboundCounter(server, n);
+                availabilityStatistics.UpdateServerOutboundCumulativeCounter(server, n);
             }
         }
 

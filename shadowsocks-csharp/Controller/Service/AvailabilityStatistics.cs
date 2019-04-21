@@ -20,11 +20,11 @@ namespace Shadowsocks.Controller
     {
         public const string DateTimePattern = "yyyy-MM-dd HH:mm:ss";
         private const string StatisticsFilesName = "shadowsocks.availability.json";
-        public static string AvailabilityStatisticsFile;
+        public static string AvailabilityStatisticsFilePath;
         //static constructor to initialize every public static fields before refereced
         static AvailabilityStatistics()
         {
-            AvailabilityStatisticsFile = Utils.GetTempPath(StatisticsFilesName);
+            AvailabilityStatisticsFilePath = Utils.GetTempPath(StatisticsFilesName);
         }
 
         //arguments for ICMP tests
@@ -32,12 +32,17 @@ namespace Shadowsocks.Controller
         public const int TimeoutMilliseconds = 500;
 
         //records cache for current server in {_monitorInterval} minutes
-        private readonly ConcurrentDictionary<string, List<int>> _latencyRecords = new ConcurrentDictionary<string, List<int>>();
+        private readonly ConcurrentDictionary<string, List<int>> _allServersLatencyRecords = new ConcurrentDictionary<string, List<int>>();
+        //records cache for current server cumlative inbound outbound count
+        private readonly ConcurrentDictionary<string, InOutBoundRecord> _allServersInOutBoundRecords = new ConcurrentDictionary<string, InOutBoundRecord>();
         //speed in KiB/s
-        private readonly ConcurrentDictionary<string, List<int>> _inboundSpeedRecords = new ConcurrentDictionary<string, List<int>>();
-        private readonly ConcurrentDictionary<string, List<int>> _outboundSpeedRecords = new ConcurrentDictionary<string, List<int>>();
-        private readonly ConcurrentDictionary<string, InOutBoundRecord> _inOutBoundRecords = new ConcurrentDictionary<string, InOutBoundRecord>();
+        private readonly ConcurrentDictionary<string, List<int>> _allServersInboundSpeedRecords = new ConcurrentDictionary<string, List<int>>();
+        private readonly ConcurrentDictionary<string, List<int>> _allServersOutboundSpeedRecords = new ConcurrentDictionary<string, List<int>>();
+        
 
+        /// <summary>
+        /// Store the cumulative inbound and outbound count of a server
+        /// </summary>
         private class InOutBoundRecord
         {
             private long _inbound;
@@ -61,12 +66,53 @@ namespace Shadowsocks.Controller
                 var il = Interlocked.Exchange(ref _lastInbound, i);
                 inboundDelta = i - il;
 
-
                 var o = Interlocked.Read(ref _outbound);
                 var ol = Interlocked.Exchange(ref _lastOutbound, o);
                 outboundDelta = o - ol;
             }
         }
+
+        public void UpdateServerLatency(Server server, int latency)
+        {
+            _allServersLatencyRecords.GetOrAdd(server.Identifier(), (k) =>
+            {
+                List<int> records = new List<int>();
+                records.Add(latency);
+                return records;
+            });
+        }
+
+        public void UpdateServerInboundCumulativeCounter(Server server, long n)
+        {
+            _allServersInOutBoundRecords.AddOrUpdate(server.Identifier(), (k) =>
+            {
+                var r = new InOutBoundRecord();
+                r.UpdateInbound(n);
+
+                return r;
+            }, (k, v) =>
+            {
+                v.UpdateInbound(n);
+                return v;
+            });
+        }
+
+        public void UpdateServerOutboundCumulativeCounter(Server server, long n)
+        {
+            _allServersInOutBoundRecords.AddOrUpdate(server.Identifier(), (k) =>
+            {
+                var r = new InOutBoundRecord();
+                r.UpdateOutbound(n);
+
+                return r;
+            }, (k, v) =>
+            {
+                v.UpdateOutbound(n);
+                return v;
+            });
+        }
+
+
 
         //tasks
         private readonly TimeSpan _delayBeforeStart = TimeSpan.FromSeconds(1);
@@ -100,7 +146,7 @@ namespace Shadowsocks.Controller
                 if (Config.StatisticsEnabled)
                 {
                     StartTimerWithoutState(ref _recorder, Run, RecordingInterval);
-                    LoadRawStatistics();
+                    LoadRawStatistics();    // load Statistics history from file
                     StartTimerWithoutState(ref _speedMonior, UpdateSpeed, _monitorInterval);
                 }
                 else
@@ -123,36 +169,40 @@ namespace Shadowsocks.Controller
             }
         }
 
+        /// <summary>
+        /// Calculate a Server's cumulative inbound/outbound series sequence to KBps sequence.
+        /// </summary>
+        /// <param name="_"></param>
         private void UpdateSpeed(object _)
         {
-            foreach (var kv in _inOutBoundRecords)
+            foreach (var kv in _allServersInOutBoundRecords)
             {
-                var id = kv.Key;
-                var record = kv.Value;
+                string serverID = kv.Key;
+                InOutBoundRecord record = kv.Value;
 
                 long inboundDelta, outboundDelta;
 
                 record.GetDelta(out inboundDelta, out outboundDelta);
 
-                var inboundSpeed = GetSpeedInKiBPerSecond(inboundDelta, _monitorInterval.TotalSeconds);
-                var outboundSpeed = GetSpeedInKiBPerSecond(outboundDelta, _monitorInterval.TotalSeconds);
+                var inboundSpeed = CalculateSpeedInKiBPerSecond(inboundDelta, _monitorInterval.TotalSeconds);
+                var outboundSpeed = CalculateSpeedInKiBPerSecond(outboundDelta, _monitorInterval.TotalSeconds);
 
-                var inR = _inboundSpeedRecords.GetOrAdd(id, (k) => new List<int>());
-                var outR = _outboundSpeedRecords.GetOrAdd(id, (k) => new List<int>());
+                var inR = _allServersInboundSpeedRecords.GetOrAdd(serverID, (k) => new List<int>());
+                var outR = _allServersOutboundSpeedRecords.GetOrAdd(serverID, (k) => new List<int>());
 
                 inR.Add(inboundSpeed);
                 outR.Add(outboundSpeed);
 
                 Logging.Debug(
-                    $"{id}: current/max inbound {inboundSpeed}/{inR.Max()} KiB/s, current/max outbound {outboundSpeed}/{outR.Max()} KiB/s");
+                    $"{serverID}: current/max inbound {inboundSpeed}/{inR.Max()} KiB/s, current/max outbound {outboundSpeed}/{outR.Max()} KiB/s");
             }
         }
 
         private void Reset()
         {
-            _inboundSpeedRecords.Clear();
-            _outboundSpeedRecords.Clear();
-            _latencyRecords.Clear();
+            _allServersInboundSpeedRecords.Clear();
+            _allServersOutboundSpeedRecords.Clear();
+            _allServersLatencyRecords.Clear();
         }
 
         private void Run(object _)
@@ -168,19 +218,20 @@ namespace Shadowsocks.Controller
             state.counter = _controller.GetCurrentConfiguration().configs.Count;
             foreach (var server in _controller.GetCurrentConfiguration().configs)
             {
-                var id = server.Identifier();
-                List<int> inboundSpeedRecords = null;
-                List<int> outboundSpeedRecords = null;
-                List<int> latencyRecords = null;
-                _inboundSpeedRecords.TryGetValue(id, out inboundSpeedRecords);
-                _outboundSpeedRecords.TryGetValue(id, out outboundSpeedRecords);
-                _latencyRecords.TryGetValue(id, out latencyRecords);
-                StatisticsRecord record = new StatisticsRecord(id, inboundSpeedRecords, outboundSpeedRecords, latencyRecords);
+                var serverId = server.Identifier();
+                List<int> currentServerInboundSpeedRecords = null;
+                List<int> currentServerOutboundSpeedRecords = null;
+                List<int> currentServerLatencyRecords = null;
+                _allServersInboundSpeedRecords.TryGetValue(serverId, out currentServerInboundSpeedRecords);
+                _allServersOutboundSpeedRecords.TryGetValue(serverId, out currentServerOutboundSpeedRecords);
+                _allServersLatencyRecords.TryGetValue(serverId, out currentServerLatencyRecords);
+                // System.InvalidOperationException: Collection was modified; enumeration operation may not execute.
+                StatisticsRecord record = new StatisticsRecord(serverId, currentServerInboundSpeedRecords, currentServerOutboundSpeedRecords, currentServerLatencyRecords);
                 /* duplicate server identifier */
-                if (records.ContainsKey(id))
-                    records[id] = record;
+                if (records.ContainsKey(serverId))
+                    records[serverId] = record;
                 else
-                    records.Add(id, record);
+                    records.Add(serverId, record);
                 if (Config.Ping)
                 {
                     MyPing ping = new MyPing(server, Repeat);
@@ -189,13 +240,13 @@ namespace Shadowsocks.Controller
                 }
                 else if (!record.IsEmptyData())
                 {
-                    AppendRecord(id, record);
+                    AppendRecord(serverId, record);
                 }
             }
 
             if (!Config.Ping)
             {
-                Save();
+                SaveRawStatistics();
                 FilterRawStatistics();
             }
         }
@@ -206,58 +257,35 @@ namespace Shadowsocks.Controller
             UpdateRecordsState state = pingState.state;
             Server server = e.Server;
             StatisticsRecord record = pingState.record;
-            record.SetResponse(e.RoundtripTime);
+            record.SetRoundtripTime(e.RoundtripTime);
             if (!record.IsEmptyData())
             {
                 AppendRecord(server.Identifier(), record);
             }
-            Logging.Debug($"Ping {server.FriendlyName()} {e.RoundtripTime.Count} times, {(100 - record.PackageLoss * 100)}% packages loss, min {record.MinResponse} ms, max {record.MaxResponse} ms, avg {record.AverageResponse} ms");
+            Logging.Debug($"Ping {server.FriendlyName()} {e.RoundtripTime.Count} times, {(100 - record.PackageLoss * 100)}% packages loss, min {record.MinRoundtripTime} ms, max {record.MaxRoundtripTime} ms, avg {record.AverageRoundtripTime} ms");
             if (Interlocked.Decrement(ref state.counter) == 0)
             {
-                Save();
+                SaveRawStatistics();
                 FilterRawStatistics();
             }
         }
 
-        private void AppendRecord(string serverIdentifier, StatisticsRecord record)
+        private void AppendRecord(string serverId, StatisticsRecord record)
         {
             try
             {
                 List<StatisticsRecord> records;
                 lock (RawStatistics)
                 {
-                    if (!RawStatistics.TryGetValue(serverIdentifier, out records))
+                    if (!RawStatistics.TryGetValue(serverId, out records))
                     {
                         records = new List<StatisticsRecord>();
-                        RawStatistics[serverIdentifier] = records;
+                        RawStatistics[serverId] = records;
                     }
                 }
                 records.Add(record);
             }
             catch (Exception e)
-            {
-                Logging.LogUsefulException(e);
-            }
-        }
-
-        private void Save()
-        {
-            Logging.Debug($"save statistics to {AvailabilityStatisticsFile}");
-            if (RawStatistics.Count == 0)
-            {
-                return;
-            }
-            try
-            {
-                string content;
-#if DEBUG
-                content = JsonConvert.SerializeObject(RawStatistics, Formatting.Indented);
-#else
-                content = JsonConvert.SerializeObject(RawStatistics, Formatting.None);
-#endif
-                File.WriteAllText(AvailabilityStatisticsFile, content);
-            }
-            catch (IOException e)
             {
                 Logging.LogUsefulException(e);
             }
@@ -285,12 +313,43 @@ namespace Shadowsocks.Controller
 
                 foreach (var serverAndRecords in RawStatistics)
                 {
-                    var server = serverAndRecords.Key;
-                    var filteredRecords = serverAndRecords.Value.FindAll(IsValidRecord);
-                    FilteredStatistics[server] = filteredRecords;
+                    var serverId = serverAndRecords.Key;
+                    var rawRecords = serverAndRecords.Value;
+                    // based on the configuration, it could return all records or recent hour records
+                    var filteredRecords = rawRecords.FindAll(IsValidRecord);
+                    FilteredStatistics[serverId] = filteredRecords;
                 }
             }
             catch (Exception e)
+            {
+                Logging.LogUsefulException(e);
+            }
+        }
+
+        private static int CalculateSpeedInKiBPerSecond(long bytes, double seconds)
+        {
+            var result = (int)(bytes / seconds) / 1024;
+            return result;
+        }
+
+        private void SaveRawStatistics()
+        {
+            Logging.Debug($"save statistics to {AvailabilityStatisticsFilePath}");
+            if (RawStatistics.Count == 0)
+            {
+                return;
+            }
+            try
+            {
+                string content;
+#if DEBUG
+                content = JsonConvert.SerializeObject(RawStatistics, Formatting.Indented);
+#else
+                content = JsonConvert.SerializeObject(RawStatistics, Formatting.None);
+#endif
+                File.WriteAllText(AvailabilityStatisticsFilePath, content);
+            }
+            catch (IOException e)
             {
                 Logging.LogUsefulException(e);
             }
@@ -300,16 +359,15 @@ namespace Shadowsocks.Controller
         {
             try
             {
-                var path = AvailabilityStatisticsFile;
-                Logging.Debug($"loading statistics from {path}");
-                if (!File.Exists(path))
+                Logging.Debug($"loading statistics from {AvailabilityStatisticsFilePath}");
+                if (!File.Exists(AvailabilityStatisticsFilePath))
                 {
-                    using (File.Create(path))
+                    using (File.Create(AvailabilityStatisticsFilePath))
                     {
                         //do nothing
                     }
                 }
-                var content = File.ReadAllText(path);
+                var content = File.ReadAllText(AvailabilityStatisticsFilePath);
                 RawStatistics = JsonConvert.DeserializeObject<Statistics>(content) ?? RawStatistics;
             }
             catch (Exception e)
@@ -320,56 +378,10 @@ namespace Shadowsocks.Controller
             }
         }
 
-        private static int GetSpeedInKiBPerSecond(long bytes, double seconds)
-        {
-            var result = (int)(bytes / seconds) / 1024;
-            return result;
-        }
-
         public void Dispose()
         {
             _recorder.Dispose();
             _speedMonior.Dispose();
-        }
-
-        public void UpdateLatency(Server server, int latency)
-        {
-            _latencyRecords.GetOrAdd(server.Identifier(), (k) =>
-            {
-                List<int> records = new List<int>();
-                records.Add(latency);
-                return records;
-            });
-        }
-
-        public void UpdateInboundCounter(Server server, long n)
-        {
-            _inOutBoundRecords.AddOrUpdate(server.Identifier(), (k) =>
-            {
-                var r = new InOutBoundRecord();
-                r.UpdateInbound(n);
-
-                return r;
-            }, (k, v) =>
-            {
-                v.UpdateInbound(n);
-                return v;
-            });
-        }
-
-        public void UpdateOutboundCounter(Server server, long n)
-        {
-            _inOutBoundRecords.AddOrUpdate(server.Identifier(), (k) =>
-            {
-                var r = new InOutBoundRecord();
-                r.UpdateOutbound(n);
-
-                return r;
-            }, (k, v) =>
-            {
-                v.UpdateOutbound(n);
-                return v;
-            });
         }
 
         class UpdateRecordsState

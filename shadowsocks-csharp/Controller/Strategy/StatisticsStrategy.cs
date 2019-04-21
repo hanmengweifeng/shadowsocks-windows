@@ -58,7 +58,7 @@ namespace Shadowsocks.Controller.Strategy
                 records.Where(record => record.MaxInboundSpeed != null).Select(record => record.MaxInboundSpeed.Value).ToList(),
                 records.Where(record => record.MaxOutboundSpeed != null).Select(record => record.MaxOutboundSpeed.Value).ToList(),
                 records.Where(record => record.AverageLatency != null).Select(record => record.AverageLatency.Value).ToList());
-            averageRecord.SetResponse(records.Select(record => record.AverageResponse).ToList());
+            averageRecord.SetRoundtripTime(records.Select(record => record.AverageRoundtripTime).ToList());
 
             foreach (var calculation in config.Calculations)
             {

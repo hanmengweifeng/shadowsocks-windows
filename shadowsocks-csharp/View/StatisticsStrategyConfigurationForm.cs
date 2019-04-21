@@ -127,7 +127,7 @@ namespace Shadowsocks.View
                             {
                                 dataGroup.First().Timestamp,
                                 Speed = dataGroup.Max(data => data.MaxInboundSpeed) ?? 0,
-                                Ping = (int) (dataGroup.Average(data => data.AverageResponse) ?? 0),
+                                Ping = (int) (dataGroup.Average(data => data.AverageRoundtripTime) ?? 0),
                                 PackageLossPercentage = (int) (dataGroup.Average(data => data.PackageLoss) ?? 0) * 100
                             };
             foreach (var data in finalData.Where(data => data.Speed != 0 || data.PackageLossPercentage != 0 || data.Ping != 0))

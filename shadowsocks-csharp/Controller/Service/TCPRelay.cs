@@ -81,17 +81,17 @@ namespace Shadowsocks.Controller
 
         public void UpdateInboundCounter(Server server, long n)
         {
-            _controller.UpdateInboundCounter(server, n);
+            _controller.UpdateServerInboundCumulativeCounter(server, n);
         }
 
         public void UpdateOutboundCounter(Server server, long n)
         {
-            _controller.UpdateOutboundCounter(server, n);
+            _controller.UpdateServerOutboundCumulativeCounter(server, n);
         }
 
         public void UpdateLatency(Server server, TimeSpan latency)
         {
-            _controller.UpdateLatency(server, latency);
+            _controller.UpdateServerLatency(server, latency);
         }
     }
 
