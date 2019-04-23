@@ -238,7 +238,7 @@ namespace Shadowsocks.Controller
                     ping.Completed += ping_Completed;
                     ping.Start(new PingState { state = state, record = record });
                 }
-                else if (!record.IsEmptyData())
+                else if (!record.IsEmptyData)
                 {
                     AppendRecord(serverId, record);
                 }
@@ -258,11 +258,11 @@ namespace Shadowsocks.Controller
             Server server = e.Server;
             StatisticsRecord record = pingState.record;
             record.SetRoundtripTime(e.RoundtripTime);
-            if (!record.IsEmptyData())
+            if (!record.IsEmptyData)
             {
                 AppendRecord(server.Identifier(), record);
             }
-            Logging.Debug($"Ping {server.FriendlyName()} {e.RoundtripTime.Count} times, {(100 - record.PackageLoss * 100)}% packages loss, min {record.MinRoundtripTime} ms, max {record.MaxRoundtripTime} ms, avg {record.AverageRoundtripTime} ms");
+            Logging.Debug($"Ping {server.FriendlyName()} {e.RoundtripTime.Count} times, {(100 - record.ICMP.PackageLoss * 100)}% packages loss, min {record.ICMP.MinRoundtripTime} ms, max {record.ICMP.MaxRoundtripTime} ms, avg {record.ICMP.AverageRoundtripTime} ms");
             if (Interlocked.Decrement(ref state.counter) == 0)
             {
                 SaveRawStatistics();

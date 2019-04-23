@@ -55,10 +55,10 @@ namespace Shadowsocks.Controller.Strategy
             float? score = null;
 
             var averageRecord = new StatisticsRecord(identifier,
-                records.Where(record => record.MaxInboundSpeed != null).Select(record => record.MaxInboundSpeed.Value).ToList(),
-                records.Where(record => record.MaxOutboundSpeed != null).Select(record => record.MaxOutboundSpeed.Value).ToList(),
-                records.Where(record => record.AverageLatency != null).Select(record => record.AverageLatency.Value).ToList());
-            averageRecord.SetRoundtripTime(records.Select(record => record.AverageRoundtripTime).ToList());
+                records.Where(record => record.TCP.MaxInboundSpeed != null).Select(record => record.TCP.MaxInboundSpeed.Value).ToList(),
+                records.Where(record => record.TCP.MaxOutboundSpeed != null).Select(record => record.TCP.MaxOutboundSpeed.Value).ToList(),
+                records.Where(record => record.TCP.AverageLatency != null).Select(record => record.TCP.AverageLatency.Value).ToList());
+            averageRecord.SetRoundtripTime(records.Select(record => record.ICMP.AverageRoundtripTime).ToList());
 
             foreach (var calculation in config.Calculations)
             {
