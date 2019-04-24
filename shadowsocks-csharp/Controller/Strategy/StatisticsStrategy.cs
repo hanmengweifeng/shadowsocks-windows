@@ -54,17 +54,17 @@ namespace Shadowsocks.Controller.Strategy
             var config = _controller.StatisticsConfiguration;
             float? score = null;
 
-            var averageRecord = new StatisticsRecord(identifier,
+            var summaryRecord = new StatisticsRecord(identifier,
                 records.Where(record => record.TCP.MaxInboundSpeed != null).Select(record => record.TCP.MaxInboundSpeed.Value).ToList(),
                 records.Where(record => record.TCP.MaxOutboundSpeed != null).Select(record => record.TCP.MaxOutboundSpeed.Value).ToList(),
                 records.Where(record => record.TCP.AverageLatency != null).Select(record => record.TCP.AverageLatency.Value).ToList());
-            averageRecord.SetRoundtripTime(records.Select(record => record.ICMP.AverageRoundtripTime).ToList());
+            summaryRecord.SetRoundtripTime(records.Select(record => record.ICMP.AverageRoundtripTime).ToList());
 
             foreach (var calculation in config.Calculations)
             {
                 var name = calculation.Key;
                 var field = typeof (StatisticsRecord).GetField(name);
-                dynamic value = field?.GetValue(averageRecord);
+                dynamic value = field?.GetValue(summaryRecord);
                 var factor = calculation.Value;
                 if (value == null || factor.Equals(0)) continue;
                 score = score ?? 0;
@@ -73,7 +73,7 @@ namespace Shadowsocks.Controller.Strategy
 
             if (score != null)
             {
-                Logging.Debug($"Highest score: {score} {JsonConvert.SerializeObject(averageRecord, Formatting.Indented)}");
+                Logging.Debug($"Highest score: {score} {JsonConvert.SerializeObject(summaryRecord, Formatting.Indented)}");
             }
             return score;
         }
