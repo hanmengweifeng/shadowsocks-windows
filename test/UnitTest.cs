@@ -7,7 +7,8 @@ using System.Threading;
 using System.Collections.Generic;
 using Shadowsocks.Controller.Hotkeys;
 using System.Diagnostics;
-
+using System.IO;
+using Shadowsocks.Model;
 
 namespace Shadowsocks.Test
 {
@@ -17,13 +18,13 @@ namespace Shadowsocks.Test
         [TestMethod]
         public void TestCompareVersion()
         {
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("2.3.1.0", "2.3.1") == 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("1.2", "1.3") < 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("1.3", "1.2") > 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("1.3", "1.3") == 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("1.2.1", "1.2") > 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("2.3.1", "2.4") < 0);
-            Assert.IsTrue(UpdateChecker.Asset.CompareVersion("1.3.2", "1.3.1") > 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("2.3.1.0", "2.3.1") == 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("1.2", "1.3") < 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("1.3", "1.2") > 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("1.3", "1.3") == 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("1.2.1", "1.2") > 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("2.3.1", "2.4") < 0);
+            Assert.IsTrue(UpdateChecker.CompareVersion("1.3.2", "1.3.1") > 0);
         }
 
         [TestMethod]
@@ -53,5 +54,117 @@ namespace Shadowsocks.Test
             Assert.IsTrue(testKey3 != null && testKey3.Equals(new HotKey(Key.NumPad7, (ModifierKeys.Control | ModifierKeys.Alt | ModifierKeys.Shift))));
         }
 
+        [TestMethod]
+        public void TestGithubRelease()
+        {
+            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<IList<GithubRelease>>(File.ReadAllText("GithubReleasesTestData.json"));
+            Assert.IsTrue(result.Count == 30);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_Standard()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0.zip", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, string.Empty);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_StandardWithSuffix()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0-prerelease.zip", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, "prerelease");
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_Standard_MismatchExtension()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0.zip.hash", out version, out suffix);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_StandardWithSuffix_MismatchExtension()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0-prerelease.zip.hash", out version, out suffix);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_Standard_Capitalize()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("sHaDoWsOcKs-1.0.0.0.zIP", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, string.Empty);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_Standard2()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.2.3-release.zip", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.2.3");
+            Assert.AreEqual(suffix, "release");
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_Standard_Exe()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0.exe", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, string.Empty);
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_StandardWithSuffix_Exe()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0-prerelease.exe", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, "prerelease");
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_StandardWithMoreSuffix()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0-prerelease test.zip", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, "prerelease test");
+        }
+
+        [TestMethod]
+        public void TestExtractVersionInfoFromFileName_StandardWithMoreSuffix2()
+        {
+            string version, suffix;
+            UpdateChecker updateChecker = new UpdateChecker();
+            var result = updateChecker.ExtractVersionInfoFromFileName("Shadowsocks-1.0.0.0-prerelease-test.zip", out version, out suffix);
+            Assert.IsTrue(result);
+            Assert.AreEqual(version, "1.0.0.0");
+            Assert.AreEqual(suffix, "prerelease-test");
+        }
     }
 }

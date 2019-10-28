@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Shadowsocks.Model;
@@ -14,14 +15,16 @@ namespace Shadowsocks.Controller
     {
         private const string UpdateURL = "https://api.github.com/repos/shadowsocks/shadowsocks-windows/releases";
         private const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36";
+        private const string GithubV3API = "application / vnd.github.v3 + json";
 
         private Configuration config;
         public bool NewVersionFound;
+        private GithubRelease LatestVersionRelease = null;
         public string LatestVersionNumber;
         public string LatestVersionSuffix;
         public string LatestVersionName;
-        public string LatestVersionURL;
         public string LatestVersionLocalName;
+        public string LatestVersionURL;
         public event EventHandler CheckUpdateCompleted;
 
         public const string Version = "4.1.7.1";
@@ -62,6 +65,7 @@ namespace Shadowsocks.Controller
             {
                 Logging.Debug("Checking updates...");
                 WebClient http = CreateWebClient();
+                http.Headers.Add(HttpRequestHeader.Accept, GithubV3API);
                 http.DownloadStringCompleted += http_DownloadStringCompleted;
                 http.DownloadStringAsync(new Uri(UpdateURL));
             }
@@ -77,51 +81,51 @@ namespace Shadowsocks.Controller
             {
                 string response = e.Result;
 
-                JArray result = JArray.Parse(response);
+                // github lists the most recent 30 releases, including preleases
+                IList<GithubRelease> releases = JsonConvert.DeserializeObject<IList<GithubRelease>>(response);
 
-                List<Asset> asserts = new List<Asset>();
-                if (result != null)
+                string latestQualifiedReleaseVersion = Version;
+
+                foreach(GithubRelease release in releases)
                 {
-                    foreach (JObject release in result)
+                    if (release.prerelease && !config.checkPreRelease)
                     {
-                        var isPreRelease = (bool)release["prerelease"];
-                        if (isPreRelease && !config.checkPreRelease)
+                        continue;
+                    }
+                    if (release.assets != null && release.assets.Count > 0)
+                    {
+                        foreach(GithubRelease.Assert assert in release.assets)
                         {
-                            continue;
-                        }
-                        foreach (JObject asset in (JArray)release["assets"])
-                        {
-                            Asset ass = Asset.ParseAsset(asset);
-                            if (ass != null)
+                            string version, suffix;
+                            // only record the main release file.
+                            if (ExtractVersionInfoFromFileName(assert.name, out version, out suffix))
                             {
-                                ass.prerelease = isPreRelease;
-                                if (ass.IsNewVersion(Version, config.checkPreRelease))
+                                if (CompareVersion(version, latestQualifiedReleaseVersion) > 0)
                                 {
-                                    asserts.Add(ass);
+                                    latestQualifiedReleaseVersion = version;
+                                    LatestVersionRelease = release;
+                                    LatestVersionNumber = version;
+                                    LatestVersionSuffix = suffix == string.Empty ? string.Empty : $"-{suffix}";
+                                    LatestVersionName = assert.name;
+                                    LatestVersionURL = assert.browser_download_url;
+                                    NewVersionFound = true;
                                 }
+                                break;
                             }
                         }
                     }
                 }
-                if (asserts.Count != 0)
-                {
-                    SortByVersions(asserts);
-                    Asset asset = asserts[asserts.Count - 1];
-                    NewVersionFound = true;
-                    LatestVersionURL = asset.browser_download_url;
-                    LatestVersionNumber = asset.version;
-                    LatestVersionName = asset.name;
-                    LatestVersionSuffix = asset.suffix == null ? "" : $"-{asset.suffix}";
 
-                    startDownload();
+                // has new version
+                if (LatestVersionRelease != null)
+                {
+                    LatestVersionLocalName = Utils.GetTempPath(LatestVersionName);
+                    StartDownload(LatestVersionLocalName, LatestVersionURL);
                 }
                 else
                 {
                     Logging.Debug("No update is available");
-                    if (CheckUpdateCompleted != null)
-                    {
-                        CheckUpdateCompleted(this, new EventArgs());
-                    }
+                    CheckUpdateCompleted?.Invoke(this, new EventArgs());
                 }
             }
             catch (Exception ex)
@@ -130,14 +134,13 @@ namespace Shadowsocks.Controller
             }
         }
 
-        private void startDownload()
+        private void StartDownload(string url, string localFile)
         {
             try
             {
-                LatestVersionLocalName = Utils.GetTempPath(LatestVersionName);
                 WebClient http = CreateWebClient();
                 http.DownloadFileCompleted += Http_DownloadFileCompleted;
-                http.DownloadFileAsync(new Uri(LatestVersionURL), LatestVersionLocalName);
+                http.DownloadFileAsync(new Uri(url), localFile);
             }
             catch (Exception ex)
             {
@@ -155,10 +158,7 @@ namespace Shadowsocks.Controller
                     return;
                 }
                 Logging.Debug($"New version {LatestVersionNumber}{LatestVersionSuffix} found: {LatestVersionLocalName}");
-                if (CheckUpdateCompleted != null)
-                {
-                    CheckUpdateCompleted(this, new EventArgs());
-                }
+                CheckUpdateCompleted?.Invoke(this, new EventArgs());
             }
             catch (Exception ex)
             {
@@ -169,85 +169,47 @@ namespace Shadowsocks.Controller
         private WebClient CreateWebClient()
         {
             WebClient http = new WebClient();
-            http.Headers.Add("User-Agent", UserAgent);
+            http.Headers.Add(HttpRequestHeader.UserAgent, UserAgent);
             http.Proxy = new WebProxy(config.localHost, config.localPort);
             return http;
         }
 
-        private void SortByVersions(List<Asset> asserts)
-        {
-            asserts.Sort();
-        }
 
-        public class Asset : IComparable<Asset>
+        public bool ExtractVersionInfoFromFileName(string fileName, out string version, out string suffix)
         {
-            public bool prerelease;
-            public string name;
-            public string version;
-            public string browser_download_url;
-            public string suffix;
-
-            public static Asset ParseAsset(JObject assertJObject)
-            {
-                var name = (string)assertJObject["name"];
-                Match match = Regex.Match(name, @"^Shadowsocks-(?<version>\d+(?:\.\d+)*)(?:|-(?<suffix>.+))\.\w+$",
+            version = string.Empty;
+            suffix = string.Empty;
+            // Ideal name: [Shadowsocks-1.0.0.0.zip] OR [Shadowsocks-1.0.0.0-prerelease.zip]
+            Match match = Regex.Match(fileName, @"^Shadowsocks-(?<version>\d+(?:\.\d+)*)(?:|-(?<suffix>.+))\.(zip|exe)$",
                     RegexOptions.IgnoreCase);
-                if (match.Success)
-                {
-                    string version = match.Groups["version"].Value;
 
-                    var asset = new Asset
-                    {
-                        browser_download_url = (string)assertJObject["browser_download_url"],
-                        name = name,
-                        version = version
-                    };
-
-                    if (match.Groups["suffix"].Success)
-                    {
-                        asset.suffix = match.Groups["suffix"].Value;
-                    }
-
-                    return asset;
-                }
-
-                return null;
-            }
-
-            public bool IsNewVersion(string currentVersion, bool checkPreRelease)
+            if (match.Success)
             {
-                if (prerelease && !checkPreRelease)
+                version = match.Groups["version"].Value;
+                if (match.Groups["suffix"].Success)
                 {
-                    return false;
+                    suffix = match.Groups["suffix"].Value;
                 }
-                if (version == null)
-                {
-                    return false;
-                }
-                var cmp = CompareVersion(version, currentVersion);
-                return cmp > 0;
+                return true;
             }
-
-            public static int CompareVersion(string l, string r)
-            {
-                var ls = l.Split('.');
-                var rs = r.Split('.');
-                for (int i = 0; i < Math.Max(ls.Length, rs.Length); i++)
-                {
-                    int lp = (i < ls.Length) ? int.Parse(ls[i]) : 0;
-                    int rp = (i < rs.Length) ? int.Parse(rs[i]) : 0;
-                    if (lp != rp)
-                    {
-                        return lp - rp;
-                    }
-                }
-                return 0;
-            }
-
-            public int CompareTo(Asset other)
-            {
-                return CompareVersion(version, other.version);
-            }
+            return false;
         }
+
+        public static int CompareVersion(string l, string r)
+        {
+            var ls = l.Split('.');
+            var rs = r.Split('.');
+            for (int i = 0; i < Math.Max(ls.Length, rs.Length); i++)
+            {
+                int lp = (i < ls.Length) ? int.Parse(ls[i]) : 0;
+                int rp = (i < rs.Length) ? int.Parse(rs[i]) : 0;
+                if (lp != rp)
+                {
+                    return lp - rp;
+                }
+            }
+            return 0;
+        }
+
     }
 }
